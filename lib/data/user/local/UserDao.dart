@@ -87,7 +87,7 @@ class UserDao {
     });
   }
 }
-
+// refactor it to entity
 class UserDomainModel {
   final int id;
   final String firstName;

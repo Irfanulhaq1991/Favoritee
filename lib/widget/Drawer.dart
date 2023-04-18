@@ -1,4 +1,5 @@
-import 'package:favoritee/screens/dogs_screen.dart';
+import 'package:favoritee/screens/dogs_breed_list_screen.dart';
+import 'package:favoritee/screens/dogs_favorite_breeds_screen.dart';
 import 'package:favoritee/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +31,7 @@ class _AppNavigationDrawerState extends State<AppNavigationDrawer> {
                   color: Colors.amber,
                 ),
                 title: Text(
-                  "Dogs",
+                  "Favorite Dogs Breeds",
                   style: TextStyle(
                     color: Colors.grey[610],
                     letterSpacing: 2.0,
@@ -42,7 +43,7 @@ class _AppNavigationDrawerState extends State<AppNavigationDrawer> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const DogsScreen()));
+                          builder: (context) => const DogsFavoriteBreedScreen()));
                 },
               ),
               const Divider(

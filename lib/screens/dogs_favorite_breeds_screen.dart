@@ -1,30 +1,30 @@
+import 'package:favoritee/data/dogs/local/BreedDao.dart';
+import 'package:favoritee/data/dogs/local/BreedLocalApi.dart';
+import 'package:favoritee/data/dogs/local/DartLocalDataSource.dart';
 import 'package:favoritee/data/dogs/remote/DogsApiImp.dart';
+import 'package:favoritee/data/dogs/remote/DogsRemoteDataSource.dart';
+import 'package:favoritee/screens/dogs_breed_list_screen.dart';
 import 'package:favoritee/widget/Toast.dart';
 import 'package:flutter/material.dart';
 
-
-import '../data/dogs/remote/DogsApi.dart';
-import '../data/dogs/remote/DogsRemoteDataSource.dart';
-
-class DogsScreen extends StatefulWidget {
-  const DogsScreen({Key? key}) : super(key: key);
+class DogsFavoriteBreedScreen extends StatefulWidget {
+  const DogsFavoriteBreedScreen({Key? key}) : super(key: key);
 
   @override
-  State<DogsScreen> createState() => _DogsScreenState();
+  State<DogsFavoriteBreedScreen> createState() => _DogsBreedListScreenState();
 }
 
-class _DogsScreenState extends State<DogsScreen> with TickerProviderStateMixin {
+class _DogsBreedListScreenState extends State<DogsFavoriteBreedScreen>
+    with TickerProviderStateMixin {
   late AnimationController controller;
   bool isShow = false;
   bool isError = false;
   String errorMessage = "";
-  late DogsAPI _dogsRemoteAPI;
-  late List<Breed> _list = [];
+  late List<BreedDbEntity> _list = [];
 
   @override
   void initState() {
     super.initState();
-    _dogsRemoteAPI = DogsAPI();
     controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -32,32 +32,11 @@ class _DogsScreenState extends State<DogsScreen> with TickerProviderStateMixin {
         setState(() {});
       });
     controller.repeat(reverse: true);
-    load();
-  }
-
-  void load() async {
-    setState(() {
-      isShow = true;
-      errorMessage = "";
-      isError = false;
+    api = BreedDao(() {
+      print("dog dao initialised");
+      load();
     });
-    try {
-      var api = DogsApiImp();
-      var data = await DogsRemoteDataSource(api).get();
-      for (var element in data) {
-        print("name: ${element.name}, imageUrl:${element.imageUrl}");
-      }
-      setState(() {
-        isShow = false;
-        _list = data;
-      });
-    } catch (exception) {
-      setState(() {
-        isError = true;
-        isShow = false;
-        errorMessage = "Data loading failed";
-      });
-    }
+    breedLocalSource = BreedsLocalDataSource(api);
   }
 
   @override
@@ -76,7 +55,6 @@ class _DogsScreenState extends State<DogsScreen> with TickerProviderStateMixin {
             InkWell(
               onTap: () {
                 Navigator.of(context).pop();
-
               },
               child: const Icon(
                 Icons.navigate_before,
@@ -86,24 +64,25 @@ class _DogsScreenState extends State<DogsScreen> with TickerProviderStateMixin {
             const Expanded(
                 child: Center(
               child: Text(
-                "Dogs",
+                "Favorite Dogs",
                 style: TextStyle(
                     color: Colors.grey,
                     letterSpacing: 2.0,
                     fontWeight: FontWeight.bold),
               ),
             )),
-            InkWell(
-              onTap: () {
-                // save to db
-               showToast(context, "Not implemented yet");
-              },
-              child: const Text(
-                "Done",
-                style: TextStyle(
-                    color: Colors.black, letterSpacing: 2.0, fontSize: 15),
-              ),
-            )
+            if (!isError)
+              InkWell(
+                onTap: () {
+                  // save to db
+                  _addFavorites();
+                },
+                child: const Text(
+                  "Add",
+                  style: TextStyle(
+                      color: Colors.black, letterSpacing: 2.0, fontSize: 15),
+                ),
+              )
           ],
         ),
         centerTitle: true,
@@ -126,9 +105,9 @@ class _DogsScreenState extends State<DogsScreen> with TickerProviderStateMixin {
                       Text(errorMessage),
                       TextButton(
                           onPressed: () {
-                            load();
+                            _addFavorites();
                           },
-                          child: const Text("Try again"))
+                          child: const Text("Add breeds"))
                     ],
                   ))
             else
@@ -154,7 +133,7 @@ class _DogsScreenState extends State<DogsScreen> with TickerProviderStateMixin {
                             height: 150,
                             width: 180,
                             fit: BoxFit.fill,
-                            _list[index].imageUrl),
+                            _list[index].imageUrl_),
                         Container(
                           margin: const EdgeInsets.fromLTRB(8, 5, 5, 0.0),
                           child: Row(
@@ -163,9 +142,9 @@ class _DogsScreenState extends State<DogsScreen> with TickerProviderStateMixin {
                                 child: Align(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      _list[index].name.replaceFirst(
-                                          _list[index].name[0],
-                                          _list[index].name[0].toUpperCase()),
+                                      _list[index].name_.replaceFirst(
+                                          _list[index].name_[0],
+                                          _list[index].name_[0].toUpperCase()),
                                       style: TextStyle(
                                         color: Colors.grey[610],
                                         letterSpacing: 2.0,
@@ -178,22 +157,22 @@ class _DogsScreenState extends State<DogsScreen> with TickerProviderStateMixin {
                                 child: InkWell(
                                     onTap: () {
                                       setState(() {
-                                        _list[index].isFave =
-                                            !_list[index].isFave;
+                                        _list[index].isFavorite_ =
+                                            !_list[index].isFavorite_;
+                                        dbBreeds.add(_list[index]);
                                       });
-                                      showToast(context, _list[index].name);
                                     },
                                     child: Row(
                                       children: [
-                                        if (_list[index].isFave)
+                                        if (_list[index].isFavorite_)
                                           const Icon(
                                             Icons.favorite,
-                                            color: Colors.red,
+                                            color: Colors.amber,
                                           )
                                         else
                                           const Icon(
                                             Icons.favorite_border_rounded,
-                                            color: Colors.red,
+                                            color: Colors.amber,
                                           ),
                                       ],
                                     )),
@@ -220,5 +199,70 @@ class _DogsScreenState extends State<DogsScreen> with TickerProviderStateMixin {
         ),
       )),
     );
+  }
+
+  late List<BreedDbEntity> dbBreeds = [];
+
+  late BreedLocalApi api; //=  BreedDao(() {print("dog dao initialised");});
+  late BreedsLocalDataSource breedLocalSource; // = BreedsLocalDataSource(api);
+
+  void _addFavorites() async {
+    final result = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const DogsBreedListScreen()));
+    if (!mounted) return;
+    load();
+  }
+
+  void load() async {
+    setState(() {
+      isShow = true;
+      errorMessage = "";
+      isError = false;
+    });
+    try {
+      var data = await breedLocalSource.getAllFavorites();
+      if (data.isEmpty) throw Exception();
+      for (var element in data) {
+        print("name: ${element.name_}, imageUrl:${element.imageUrl_}");
+      }
+      setState(() {
+        isShow = false;
+        _list = data;
+      });
+    } catch (exception) {
+      print(exception.toString());
+      setState(() {
+        isError = true;
+        isShow = false;
+        errorMessage = "No favorite breed added yet";
+      });
+    }
+  }
+
+  void delete() async {
+    try {
+      setState(() {
+        isShow = true;
+        errorMessage = "";
+        isError = false;
+      });
+      await breedLocalSource.deleteAllFavorites(dbBreeds);
+      var data = await breedLocalSource.getAllFavorites();
+      if (data.isEmpty) throw Exception();
+      for (var element in data) {
+        print("name: ${element.name_}, imageUrl:${element.imageUrl_}");
+      }
+      setState(() {
+        isShow = false;
+        _list = data;
+      });
+      dbBreeds.clear();
+    } catch (exception) {
+      setState(() {
+        isError = true;
+        isShow = false;
+        errorMessage = "Could not perform deletion,try again";
+      });
+    }
   }
 }

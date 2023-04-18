@@ -2,7 +2,6 @@ import 'BreedApi.dart';
 
 class DogsRemoteDataSource {
   final BreedApi _api;
-  final _breeds = <Breed>[];
 
   DogsRemoteDataSource(this._api);
 
